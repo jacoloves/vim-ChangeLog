@@ -37,14 +37,17 @@ function! s:rewrite_date() abort
         endfor
     endif
 
+    " 一度配列に全てメモデータを格納する
     let write_lines = []
     for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
         call add(write_lines, line)
     endfor
 
+    " 配列の1行目に日付、2行目にタブを挿入する
     call insert(write_lines, title_row, 0)
     call insert(write_lines, tab_space, 1)
 
+    " 再度ファイルに書き込む
     call writefile(write_lines, expand(join([g:changelog_save_path, s:filename], s:sep)))
     
     return 
