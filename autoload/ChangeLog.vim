@@ -102,30 +102,29 @@ endfunction
 " TODO: Deleted after completion
 function! ChangeLog#test() abort
     let lines = []
+    "let search_lines = []
+    let nowtime = localtime()
+
     for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
         call add(lines, line)
     endfor
 
-    if !exists("g:user_full_name") || empty("g:user_full_name")
-        let user_name = "anonymous"
-    else
-        let user_name = g:user_full_name
-    endif
-
-    if !exists("g:user_mail_address") || empty("g:user_mail_address")
-        let user_mail_address = "anonymous@hogehoge"
-    else
-        let user_mail_address = g:user_mail_address
-    endif
-
-    let title_row = s:time . " " . user_name . " " . "<" . user_mail_address . ">"
-
-    call insert(lines, title_row, 0)
-    let tab_space = "\t"
-    call insert(lines, tab_space, 1)
+    let index = 1
+    "while index < 31
+    "    let minu_day = (60 * 60 * 24 * index)
+    "    echo strftime("%Y-%m-%d", nowtime - minu_day)
+    "    let index = index + 1
+    "endwhile
 
     for line in lines
-        echo line
+        while index < 31
+            echo "test"
+            let minu_day = (60 * 60 * 24 * index)
+            if match(line, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1
+                echo line
+            endif
+            let index = index + 1
+        endwhile
     endfor
 endfunction
 
