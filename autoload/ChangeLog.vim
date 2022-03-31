@@ -109,7 +109,7 @@ function! ChangeLog#test() abort
         call add(lines, line)
     endfor
 
-    let index = 1
+    let index =0 
     "while index < 31
     "    let minu_day = (60 * 60 * 24 * index)
     "    echo strftime("%Y-%m-%d", nowtime - minu_day)
@@ -118,10 +118,10 @@ function! ChangeLog#test() abort
 
     for line in lines
         while index < 31
-            echo "test"
             let minu_day = (60 * 60 * 24 * index)
             if match(line, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1
                 echo line
+                echo match(line, strftime("%Y-%m-%d", nowtime - minu_day))
             endif
             let index = index + 1
         endwhile
