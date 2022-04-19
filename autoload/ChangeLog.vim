@@ -9,7 +9,6 @@ function! s:create_changelog() abort
        execute "redir END"
        call s:first_write_date()
    endif
-
    return
 endfunction
 
@@ -119,12 +118,37 @@ function! ChangeLog#test() abort
     for line in lines
         while index < 31
             let minu_day = (60 * 60 * 24 * index)
-            if match(line, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1
+            let linePart = strpart(line, 0, 10)
+            if match(linePart, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
                 echo line
-                echo match(line, strftime("%Y-%m-%d", nowtime - minu_day))
+                break
             endif
             let index = index + 1
         endwhile
+    endfor
+endfunction
+
+function! ChangeLog#test_time() abort
+    let lines = []
+
+    for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
+        call add(lines, line)
+    endfor
+
+    let nowtime = localtime()
+    let judgeTime = strftime("%Y-%m-%d", nowtime - 1)
+
+    let index = 0
+    for line in lines
+        let minu_day = (60 * 60 * 24 * index)
+        let linePart = strpart(line, 0, 10)
+        if match(linePart, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
+            let index = index + 1
+            echo line
+        endif
+        if index == 31
+            break
+        endif
     endfor
 endfunction
 
