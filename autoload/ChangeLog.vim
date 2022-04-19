@@ -130,6 +130,7 @@ endfunction
 
 function! ChangeLog#test_time() abort
     let lines = []
+    let word_linecnt_dict = {}
 
     for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
         call add(lines, line)
@@ -139,17 +140,38 @@ function! ChangeLog#test_time() abort
     let judgeTime = strftime("%Y-%m-%d", nowtime - 1)
 
     let index = 0
+    let line_cnt = 1 
     for line in lines
         let minu_day = (60 * 60 * 24 * index)
-        let linePart = strpart(line, 0, 10)
-        if match(linePart, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
+        if stridx(line, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
             let index = index + 1
-            echo line
+            let word_linecnt_dict[line] = line_cnt
         endif
         if index == 31
             break
         endif
+        let line_cnt = line_cnt + 1
     endfor
+
+    " echo word_linecnt_dict
+    let word_keylist = keys(word_linecnt_dict)
+    for key in word_keylist
+        echo key
+        echo word_linecnt_dict[key]
+    endfor
+    
+    
+endfunction
+
+" date search list display buffer name
+let s:date_search_list_buffer = 'SEARCHDATE_LIST'
+
+" display date search list process
+function! ChangeLog#searchDateList() abort
+    let search_list = s:date_search_list_buffer()
+    if empty(search_list)
+        return
+    endif
 endfunction
 
 function! ChangeLog#main() abort
