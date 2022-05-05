@@ -1,6 +1,10 @@
 let s:time = strftime("%Y-%m-%d")
 let s:sep = fnamemodify('.', ':p')[-1:]
 let s:filename = "ChangeLog.txt"
+" date search list display buffer name
+let s:date_search_list_buffer = 'SEARCH_DATE_LIST'
+" keyword search list display buffer name
+let s:keyword_search_list_buffer = 'SEARCH_KEYWORD_LIST'
 
 " create ChageLog
 function! s:create_changelog() abort
@@ -36,22 +40,24 @@ function! s:rewrite_date() abort
         endfor
     endif
 
-    " 一度配列に全てメモデータを格納する
+    " Store all memo data in an array once. 
     let write_lines = []
     for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
         call add(write_lines, line)
     endfor
 
-    " 配列の1行目に日付、2行目にタブを挿入する
+    " Insert the date in the first row of the array and the tab in the second
+    " row.
     call insert(write_lines, title_row, 0)
     call insert(write_lines, tab_space, 1)
 
-    " 再度ファイルに書き込む
+    " rewrite file 
     call writefile(write_lines, expand(join([g:changelog_save_path, s:filename], s:sep)))
     
     return 
 endfunction
 
+" first time write date
 function! s:first_write_date() abort
     if !exists("g:user_full_name") || empty("g:user_full_name")
         let user_name = "anonymous"
@@ -84,10 +90,11 @@ endfunction
 
 " read date
 function! s:check_date() abort
-    " readfile()でファイルの中身を1行だけ出力する。
+    " readfile() outputs a single line of the file contents. 
     if !empty(expand(join([g:changelog_save_path, s:filename], s:sep))) 
         for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)), '', 1)
-            " 現在の日付と一致しない場合は新しい日付セッティングするフラグを立てる
+            " If it does not match the current date, a flag is erected to set
+            " a new date.
             if line[0:9] != s:time
                 return 1
             endif
@@ -97,24 +104,21 @@ function! s:check_date() abort
     return 0
 endfunction
 
+" Get the date 30 days before the current date. 
 function! s:date_searchdict() abort
     let lines = []
-    let word_linecnt_dict = {}
-
-    for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
-        call add(lines, line)
-    endfor
+    let word_line_dict = {}
 
     let nowtime = localtime()
     let judgeTime = strftime("%Y-%m-%d", nowtime - 1)
 
     let index = 0
     let line_cnt = 1 
-    for line in lines
+    for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
         let minu_day = (60 * 60 * 24 * index)
         if stridx(line, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
             let index = index + 1
-            let word_linecnt_dict[line_cnt] = line[0:9]
+            let word_line_dict[line_cnt] = line[0:9]
         endif
         if index == 31
             break
@@ -122,27 +126,7 @@ function! s:date_searchdict() abort
         let line_cnt = line_cnt + 1
     endfor
 
-    return word_linecnt_dict
-endfunction
-
-" date search list display buffer name
-let s:date_search_list_buffer = 'SEARCHDATE_LIST'
-
-function! ChangeLog#test() abort
-    let changelog_path = join([g:changelog_save_path, s:filename], s:sep)
-    if bufexists(changelog_path) 
-        let winid = bufwinid(changelog_path)
-        if winid isnot# -1
-            call win_gotoid(winid)
-        else
-            execute 'sbuffer ' changelog_path
-        endif
-    else
-        execute 'new' changelog_path
-    endif
-    execute '3'
-    execute 'bwpiout! ' s:date_search_list_buffer
-    return
+    return word_line_dict
 endfunction
 
 " jump search date row
@@ -167,6 +151,7 @@ function! ChangeLog#jump_date_row(target_date) abort
         execute 'new' changelog_path
     endif
     execute date_row
+    " delete SEARCH_DATE_LIST buffer 
     execute 'bwipeout!' s:date_search_list_buffer
     return
 endfunction
@@ -195,7 +180,7 @@ function! ChangeLog#searchDateList() abort
         execute 'new' s:date_search_list_buffer
         set buftype=nofile
 
-        " 1. Press 'q' on SEARCHDATE_LIST to delete buffer
+        " 1. Press 'q' on SEARCH_DATE_LIST to delete buffer
         " 2. Press 'Enter' to jump target date
         " Define two key mappings.
         nnoremap <silent> <buffer>
@@ -217,6 +202,87 @@ function! ChangeLog#searchDateList() abort
     call setline(1, search_list)
 endfunction
 
+" Insert a keyword search in the dictionary
+function! s:keyword_searchdict(keyword) abort
+    let keyword_line_list = [] 
+    let line_cnt = 1
+    for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
+        if stridx(line, expand(a:keyword)) !=# -1
+            let composite_str = line_cnt . ":" . line
+            call add(keyword_line_list, composite_str)
+        endif
+        let line_cnt = line_cnt + 1
+    endfor
+    
+    return keyword_line_list
+endfunction
+
+" jump search keyword row
+function! ChangeLog#jump_keyword_row(target_keyword) abort
+    let keywords = split(a:target_keyword, ":")
+    let keyword_row = keywords[0]
+    
+    let changelog_path = join([g:changelog_save_path, s:filename], s:sep)
+    if bufexists(changelog_path) 
+        let winid = bufwinid(changelog_path)
+        if winid isnot# -1
+            call win_gotoid(winid)
+        else
+            execute 'buffer ' changelog_path
+        endif
+    else
+        execute 'new' changelog_path
+    endif
+    execute keyword_row
+    " delete SEARCH_KEYWORD_LIST buffer 
+    execute 'bwipeout!' s:keyword_search_list_buffer
+    return
+endfunction
+
+" display keyword search list process
+function! ChangeLog#kewordsearch() abort
+    let input_keyword = input(printf("Search Keyword(Words with * at the beginning of the sentence): "), '', )  
+
+    let search_keyword = "* " . input_keyword
+    let search_list = s:keyword_searchdict(search_keyword)
+
+    if empty(search_list)
+        return
+    endif
+
+    if bufexists(s:keyword_search_list_buffer)
+        let winid = bufwinid(s:keyword_search_list_buffer)
+        if winid isnot# -1
+            call win_gotoid(winid)
+        else
+            execute 'sbuffer' s:keyword_search_list_buffer
+        endif
+    else
+        execute 'new' s:keyword_search_list_buffer
+        set buftype=nofile
+
+        " 1. Press 'q' on SEARCH_KEYWORD_LIST to delete buffer
+        " 2. Press 'Enter' to jump target date
+        " Define two key mappings.
+        nnoremap <silent> <buffer>
+                    \ <Plug>(keywordsearch-session-close)
+                    \ :<C-u>bwipeout!<CR>
+
+        nnoremap <silent> <buffer>
+                    \ <Plug>(jump-keyword)
+                    \ :<C-u>call ChangeLog#jump_keyword_row(trim(getline('.')))<CR>
+
+       " <Plug> map to key
+        nmap <buffer> q <Plug>(keywordsearch-session-close)
+        nmap <buffer> <CR> <Plug>(jump-keyword)
+    endif
+
+    " Delete all text in the temporary buffer and insert the retrieved date
+    " search list into the buffer.
+    %delete _
+    call setline(1, search_list)
+endfunction
+
 function! ChangeLog#main() abort
     call s:create_changelog()
     let changeTitleFlg = s:check_date()
@@ -227,5 +293,4 @@ function! ChangeLog#main() abort
     execute "buffer " . join([g:changelog_save_path, s:filename], s:sep)
 
     return
-
 endfunction
