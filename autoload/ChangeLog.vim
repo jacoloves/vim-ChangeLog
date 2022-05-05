@@ -157,7 +157,7 @@ function! ChangeLog#jump_date_row(target_date) abort
 endfunction
 
 " display date search list process
-function! ChangeLog#searchDateList() abort
+function! ChangeLog#searchDate() abort
     let search_dict = s:date_searchdict()
     let search_list = []
 
@@ -203,7 +203,7 @@ function! ChangeLog#searchDateList() abort
 endfunction
 
 " Insert a keyword search in the dictionary
-function! s:keyword_searchdict(keyword) abort
+function! s:keyword_searchlist(keyword) abort
     let keyword_line_list = [] 
     let line_cnt = 1
     for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
@@ -240,11 +240,11 @@ function! ChangeLog#jump_keyword_row(target_keyword) abort
 endfunction
 
 " display keyword search list process
-function! ChangeLog#kewordsearch() abort
+function! ChangeLog#searchKeyword() abort
     let input_keyword = input(printf("Search Keyword(Words with * at the beginning of the sentence): "), '', )  
 
     let search_keyword = "* " . input_keyword
-    let search_list = s:keyword_searchdict(search_keyword)
+    let search_list = s:keyword_searchlist(search_keyword)
 
     if empty(search_list)
         return
