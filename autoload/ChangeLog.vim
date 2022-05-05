@@ -97,38 +97,7 @@ function! s:check_date() abort
     return 0
 endfunction
 
-" test function
-" TODO: Deleted after completion
-function! ChangeLog#test() abort
-    let lines = []
-    "let search_lines = []
-    let nowtime = localtime()
-
-    for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
-        call add(lines, line)
-    endfor
-
-    let index =0 
-    "while index < 31
-    "    let minu_day = (60 * 60 * 24 * index)
-    "    echo strftime("%Y-%m-%d", nowtime - minu_day)
-    "    let index = index + 1
-    "endwhile
-
-    for line in lines
-        while index < 31
-            let minu_day = (60 * 60 * 24 * index)
-            let linePart = strpart(line, 0, 10)
-            if match(linePart, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
-                echo line
-                break
-            endif
-            let index = index + 1
-        endwhile
-    endfor
-endfunction
-
-function! ChangeLog#test_time() abort
+function! s:date_searchdict() abort
     let lines = []
     let word_linecnt_dict = {}
 
@@ -145,7 +114,7 @@ function! ChangeLog#test_time() abort
         let minu_day = (60 * 60 * 24 * index)
         if stridx(line, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
             let index = index + 1
-            let word_linecnt_dict[line] = line_cnt
+            let word_linecnt_dict[line_cnt] = line[0:9]
         endif
         if index == 31
             break
@@ -153,25 +122,99 @@ function! ChangeLog#test_time() abort
         let line_cnt = line_cnt + 1
     endfor
 
-    " echo word_linecnt_dict
-    let word_keylist = keys(word_linecnt_dict)
-    for key in word_keylist
-        echo key
-        echo word_linecnt_dict[key]
-    endfor
-    
-    
+    return word_linecnt_dict
 endfunction
 
 " date search list display buffer name
 let s:date_search_list_buffer = 'SEARCHDATE_LIST'
 
+function! ChangeLog#test() abort
+    let changelog_path = join([g:changelog_save_path, s:filename], s:sep)
+    if bufexists(changelog_path) 
+        let winid = bufwinid(changelog_path)
+        if winid isnot# -1
+            call win_gotoid(winid)
+        else
+            execute 'sbuffer ' changelog_path
+        endif
+    else
+        execute 'new' changelog_path
+    endif
+    execute '3'
+    execute 'bwpiout! ' s:date_search_list_buffer
+    return
+endfunction
+
+" jump search date row
+function! ChangeLog#jump_date_row(target_date) abort
+    let date_row = ''
+    for [key, value] in items(s:date_searchdict())
+        if value == a:target_date
+            let date_row = key
+            break
+        endif
+    endfor
+
+    let changelog_path = join([g:changelog_save_path, s:filename], s:sep)
+    if bufexists(changelog_path) 
+        let winid = bufwinid(changelog_path)
+        if winid isnot# -1
+            call win_gotoid(winid)
+        else
+            execute 'buffer ' changelog_path
+        endif
+    else
+        execute 'new' changelog_path
+    endif
+    execute date_row
+    execute 'bwipeout!' s:date_search_list_buffer
+    return
+endfunction
+
 " display date search list process
 function! ChangeLog#searchDateList() abort
-    let search_list = s:date_search_list_buffer()
+    let search_dict = s:date_searchdict()
+    let search_list = []
+
+    for k in keys(search_dict)
+       call add(search_list, search_dict[k]) 
+    endfor
+
     if empty(search_list)
         return
     endif
+    
+    if bufexists(s:date_search_list_buffer)
+        let winid = bufwinid(s:date_search_list_buffer)
+        if winid isnot# -1
+            call win_gotoid(winid)
+        else
+            execute 'sbuffer' s:date_search_list_buffer
+        endif
+    else
+        execute 'new' s:date_search_list_buffer
+        set buftype=nofile
+
+        " 1. Press 'q' on SEARCHDATE_LIST to delete buffer
+        " 2. Press 'Enter' to jump target date
+        " Define two key mappings.
+        nnoremap <silent> <buffer>
+                    \ <Plug>(datesearch-session-close)
+                    \ :<C-u>bwipeout!<CR>
+
+        nnoremap <silent> <buffer>
+                    \ <Plug>(jump-date)
+                    \ :<C-u>call ChangeLog#jump_date_row(trim(getline('.')))<CR>
+
+       " <Plug> map to key
+       nmap <buffer> q <Plug>(datesearch-session-close)
+       nmap <buffer> <CR> <Plug>(jump-date)
+    endif
+
+    " Delete all text in the temporary buffer and insert the retrieved date
+    " search list into the buffer.
+    %delete _
+    call setline(1, search_list)
 endfunction
 
 function! ChangeLog#main() abort
@@ -181,7 +224,7 @@ function! ChangeLog#main() abort
         call s:rewrite_date()
     endif
 
-    execute "tabedit " . join([g:changelog_save_path, s:filename], s:sep)
+    execute "buffer " . join([g:changelog_save_path, s:filename], s:sep)
 
     return
 
