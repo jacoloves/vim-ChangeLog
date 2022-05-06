@@ -90,38 +90,24 @@ endfunction
 
 " Get the date 30 days before the current date. 
 function! s:date_searchdict() abort
-    let lines = []
-    let word_line_dict = {}
+    let date_lines = []
 
-    let nowtime = localtime()
-    let judgeTime = strftime("%Y-%m-%d", nowtime - 1)
-
-    let index = 0
     let line_cnt = 1 
     for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
-        let minu_day = (60 * 60 * 24 * index)
-        if stridx(line, strftime("%Y-%m-%d", nowtime - minu_day)) !=# -1 
-            let index = index + 1
-            let word_line_dict[line_cnt] = line[0:9]
+        if line =~ '[1-2][0-9][0-9][0-9]\-[0-1][0-9]\-[0-3][0-9]\s[0-9a-zA-Z]\+\s'
+            let composite_str = line_cnt . ": " . line
+            call add (date_lines, composite_str)
         endif
-        if index == 31
-            break
-        endif
-        let line_cnt = line_cnt + 1
+        let line_cnt = line_cnt + 1 
     endfor
 
-    return word_line_dict
+    return date_lines 
 endfunction
 
 " jump search date row
 function! ChangeLog#jump_date_row(target_date) abort
-    let date_row = ''
-    for [key, value] in items(s:date_searchdict())
-        if value == a:target_date
-            let date_row = key
-            break
-        endif
-    endfor
+    let dates = split(a:target_date, ":")
+    let date_row = dates[0]
 
     let changelog_path = join([g:changelog_save_path, s:filename], s:sep)
     if bufexists(changelog_path) 
@@ -142,12 +128,8 @@ endfunction
 
 " display date search list process
 function! ChangeLog#searchDate() abort
-    let search_dict = s:date_searchdict()
-    let search_list = []
-
-    for k in keys(search_dict)
-       call add(search_list, search_dict[k]) 
-    endfor
+    set nomodeline
+    let search_list = s:date_searchdict()
 
     if empty(search_list)
         return
@@ -212,7 +194,7 @@ function! ChangeLog#jump_keyword_row(target_keyword) abort
         if winid isnot# -1
             call win_gotoid(winid)
         else
-            execute 'buffer ' changelog_path
+            execute 'sbuffer ' changelog_path
         endif
     else
         execute 'edit ' changelog_path
@@ -225,6 +207,7 @@ endfunction
 
 " display keyword search list process
 function! ChangeLog#searchKeyword() abort
+    set nomodeline
     let input_keyword = input(printf("Search Keyword(Words with * at the beginning of the sentence): "), '', )  
 
     let search_keyword = "* " . input_keyword
@@ -247,7 +230,7 @@ function! ChangeLog#searchKeyword() abort
 
         " 1. Press 'q' on SEARCH_KEYWORD_LIST to delete buffer
         " 2. Press 'Enter' to jump target date
-        " Define two key mappings.
+        " Define two key mappings
         nnoremap <silent> <buffer>
                     \ <Plug>(keywordsearch-session-close)
                     \ :<C-u>bwipeout!<CR>
@@ -267,6 +250,22 @@ function! ChangeLog#searchKeyword() abort
     call setline(1, search_list)
 endfunction
 
+function! ChangeLog#test() abort
+    let test_line = []
+    let line_cnt = 1
+    for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
+        if line =~ '[1-2][0-9][0-9][0-9]\-[0-1][0-9]\-[0-3][0-9]\s[0-9a-zA-Z]\+\s'
+            let composite_str = line_cnt . ": " . line
+            call add (test_line, composite_str)
+        endif
+        let line_cnt = line_cnt + 1 
+    endfor
+
+    echo test_line
+    return
+endfunction
+
+// open your changelog.txt and writing current date
 function! ChangeLog#main() abort
     set nomodeline
     call s:create_changelog()
