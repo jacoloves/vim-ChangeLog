@@ -32,14 +32,6 @@ function! s:rewrite_date() abort
 
     let title_row = s:time . " " . user_name . " " . "<" . user_mail_address . ">"
 
-    if !exists("g:tab_space_num") || empty("g:tab_space_num")
-        let tab_space = "\t"
-    else
-        for a in g:tab_space_num
-            let tab_space .= " "
-        endfor
-    endif
-
     " Store all memo data in an array once. 
     let write_lines = []
     for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
@@ -49,7 +41,7 @@ function! s:rewrite_date() abort
     " Insert the date in the first row of the array and the tab in the second
     " row.
     call insert(write_lines, title_row, 0)
-    call insert(write_lines, tab_space, 1)
+    call insert(write_lines, "\t", 1)
 
     " rewrite file 
     call writefile(write_lines, expand(join([g:changelog_save_path, s:filename], s:sep)))
@@ -73,15 +65,7 @@ function! s:first_write_date() abort
 
     let title_row = s:time . " " . user_name . " " . "<" . user_mail_address . ">"
 
-    if !exists("g:tab_space_num") || empty("g:tab_space_num")
-        let tab_space = "\t"
-    else
-        for a in g:tab_space_num
-            let tab_space .= " "
-        endfor
-    endif
-
-    let lines = [title_row, tab_space] 
+    let lines = [title_row, "\t"] 
 
     call writefile(lines, expand(join([g:changelog_save_path, s:filename], s:sep)))
 
@@ -148,7 +132,7 @@ function! ChangeLog#jump_date_row(target_date) abort
             execute 'buffer ' changelog_path
         endif
     else
-        execute 'new' changelog_path
+        execute 'edit ' changelog_path
     endif
     execute date_row
     " delete SEARCH_DATE_LIST buffer 
@@ -231,7 +215,7 @@ function! ChangeLog#jump_keyword_row(target_keyword) abort
             execute 'buffer ' changelog_path
         endif
     else
-        execute 'new' changelog_path
+        execute 'edit ' changelog_path
     endif
     execute keyword_row
     " delete SEARCH_KEYWORD_LIST buffer 
@@ -284,13 +268,14 @@ function! ChangeLog#searchKeyword() abort
 endfunction
 
 function! ChangeLog#main() abort
+    set nomodeline
     call s:create_changelog()
     let changeTitleFlg = s:check_date()
     if changeTitleFlg
         call s:rewrite_date()
     endif
-
-    execute "buffer " . join([g:changelog_save_path, s:filename], s:sep)
+    
+    execute "vnew" expand(join([g:changelog_save_path, s:filename], s:sep))
 
     return
 endfunction
