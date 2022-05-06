@@ -1,0 +1,149 @@
+*ChangeLog.txt*	日本語ヘルプ
+
+Version :
+Author  :
+License : MIT license  {{{
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+}}}
+
+==============================================================================
+目次						*ChangeLog-contents*
+
+概要				|ChangeLog-introduction|
+使い方				|ChangeLog-usage|
+インターフェイス		|ChangeLog-interface|
+  変数				  |ChangeLog-variables|
+  コマンド			  |ChangeLog-commands|
+  キーマッピング		  |ChangeLog-key-mappings|
+  関数				  |ChangeLog-functions|
+TODO				|ChangeLog-todo|
+更新履歴			|ChangeLog-changelog|
+
+
+==============================================================================
+概要						*ChangeLog-introduction*
+
+*ChangeLog* は http://0xcc.net/unimag/1/ を参考にして作ったメモツールです。
+
+最新版:
+https://github.com/jacoloves/ChangeLog.vim
+
+
+==============================================================================
+使い方						*ChangeLog-usage*
+
+
+
+==============================================================================
+インターフェイス				*ChangeLog-interface*
+
+------------------------------------------------------------------------------
+変数						*ChangeLog-variables*
+
+g:changelog_save_path				*g:changelog_save_path*
+	Location for storing chagelog memos.
+
+g:user_full_name				*g:user_full_name*
+	Name to be set in changelog. (optional)
+
+g:user_mail_address				*g:user_mail_address*
+	mail address to be set in changelog. (optional)
+
+------------------------------------------------------------------------------
+コマンド					*ChangeLog-commands*
+
+:ChangeLogOpen					*:ChangeLogOpen*
+	Open your changelog.txt.
+
+:SearchDateChaneLog				*:SearchDateChaneLog*
+	Searching write date.
+
+:SearchKeywordChangeLog				*:SearchKeywordChangeLog*
+	Searching keyword. (Only those lines with with a leading *.)
+
+------------------------------------------------------------------------------
+キーマッピング					*ChangeLog-key-mappings*
+
+<Plug>(datesearch-session-close)	*<Plug>(datesearch-session-close)*
+	バッファローカルなマッピング
+	有効モード: ノーマル
+	デフォルトマッピング(バッファローカル):
+		ノーマル:	q
+
+
+<Plug>(jump-date)				*<Plug>(jump-date)*
+	バッファローカルなマッピング
+	有効モード: ノーマル
+	デフォルトマッピング(バッファローカル):
+		ノーマル:	<CR>
+
+
+<Plug>(keywordsearch-session-close)	*<Plug>(keywordsearch-session-close)*
+	バッファローカルなマッピング
+	有効モード: ノーマル
+	デフォルトマッピング(バッファローカル):
+		ノーマル:	q
+
+
+<Plug>(jump-keyword)				*<Plug>(jump-keyword)*
+	バッファローカルなマッピング
+	有効モード: ノーマル
+	デフォルトマッピング(バッファローカル):
+		ノーマル:	<CR>
+
+
+						*ChangeLog-default-key-mappings*
+
+ローカルデフォルトマッピング
+ノーマルモード
+{lhs}		{rhs}
+--------	------------------------
+<CR>		<Plug>(jump-date) <Plug>(jump-keyword)
+q		<Plug>(datesearch-session-close) <Plug>(keywordsearch-session-close)
+
+
+------------------------------------------------------------------------------
+関数						*ChangeLog-functions*
+
+ChangeLog#jump_date_row({target-date})		*ChangeLog#jump_date_row()*
+	Jump searching date row
+
+ChangeLog#jump_keyword_row({target-keyword})	*ChangeLog#jump_keyword_row()*
+	Jump searching keyword row
+
+ChangeLog#main()				*ChangeLog#main()*
+	Open your changelog.txt and writing current date.
+
+ChangeLog#searchDate()				*ChangeLog#searchDate()*
+	Display date search list process 	
+
+ChangeLog#searchKeyword()			*ChangeLog#searchKeyword()*
+	Display keyword search list process 	
+
+==============================================================================
+TODO						*ChangeLog-todo*
+
+
+
+==============================================================================
+更新履歴					*ChangeLog-changelog*
+
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:
