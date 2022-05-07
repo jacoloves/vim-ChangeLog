@@ -1,8 +1,8 @@
 # vim-ChangeLog.vim
-Memo plugin inspired by http://0xcc.net/unimag/1/ .
+Memo plugin inspired by http://0xcc.net/unimag/1/ .   
 Use it for everyday memos, development memos, etc.
 # Requirement
-・It works Vim. (Operation with NeoVim is currently being verified.)
+・It works Vim. (Operation with NeoVim is currently being verified.)   
 ・It has the following features.
 
 1. Create a new Changelog.txt file.
