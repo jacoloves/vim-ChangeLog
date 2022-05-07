@@ -71,11 +71,11 @@ g:user_mail_address				*g:user_mail_address*
 :ChangeLogOpen					*:ChangeLogOpen*
 	Open your changelog.txt.
 
-:SearchDateChaneLog				*:SearchDateChaneLog*
+:SearchDateChangeLog				*:SearchDateChangeLog*
 	Searching write date.
 
 :SearchKeywordChangeLog				*:SearchKeywordChangeLog*
-	Searching keyword. (Only those lines with with a leading *.)
+	Searching keyword. (Only those lines with a leading *.)
 
 ------------------------------------------------------------------------------
 キーマッピング					*ChangeLog-key-mappings*
