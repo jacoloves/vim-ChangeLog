@@ -250,22 +250,7 @@ function! ChangeLog#searchKeyword() abort
     call setline(1, search_list)
 endfunction
 
-function! ChangeLog#test() abort
-    let test_line = []
-    let line_cnt = 1
-    for line in readfile(expand(join([g:changelog_save_path, s:filename], s:sep)))
-        if line =~ '[1-2][0-9][0-9][0-9]\-[0-1][0-9]\-[0-3][0-9]\s[0-9a-zA-Z]\+\s'
-            let composite_str = line_cnt . ": " . line
-            call add (test_line, composite_str)
-        endif
-        let line_cnt = line_cnt + 1 
-    endfor
-
-    echo test_line
-    return
-endfunction
-
-// open your changelog.txt and writing current date
+" open your changelog.txt and writing current date
 function! ChangeLog#main() abort
     set nomodeline
     call s:create_changelog()
